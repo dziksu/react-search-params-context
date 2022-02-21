@@ -1,0 +1,6 @@
+/build
+/mock
+/src/common/types/graphql.type.ts
+/dist
+/example/dist
+/.github
