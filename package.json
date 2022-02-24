@@ -1,8 +1,11 @@
 {
+  "name": "react-search-params-context",
   "version": "0.0.1",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
+  "author": "Benjamin Rast",
+  "module": "dist/react-hook-search-query.esm.js",
   "files": [
     "dist",
     "src"
@@ -37,9 +40,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "react-hook-search-query",
-  "author": "Benjamin Rast",
-  "module": "dist/react-hook-search-query.esm.js",
   "size-limit": [
     {
       "path": "dist/react-hook-search-query.cjs.production.min.js",

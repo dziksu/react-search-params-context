@@ -2,7 +2,7 @@ import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { createSearchParamsContext } from '../src';
+import { createSearchParamsContext, useSearchParams } from '../src';
 import { Filters } from './components/filters';
 import { Table } from './components/table';
 import { RerenderCounter } from './components/rerender-counter';
@@ -12,6 +12,16 @@ type SearchQueryParams = {
   name?: string;
   status?: 'Alive' | 'Dead' | 'unknown';
 };
+
+const { values, setValues, resetValues } = useSearchParams({
+  sync: true,
+  omitEmpty: true,
+  defaultValues: {
+    page: 1,
+    search: 'john',
+    age: 24,
+  },
+});
 
 export const {
   Provider: SearchParamsProvider,
@@ -53,10 +63,8 @@ const App: React.VFC = () => {
     <QueryClientProvider client={clientQuery}>
       <RerenderCounter />
       <SearchParamsProvider>
-        <ASearchParamsProvider>
-          <Filters />
-          <Table />
-        </ASearchParamsProvider>
+        <Filters />
+        <Table />
       </SearchParamsProvider>
     </QueryClientProvider>
   );
