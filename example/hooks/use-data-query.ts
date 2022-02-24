@@ -1,8 +1,8 @@
 import { useQuery } from 'react-query';
-import { useValueSelector } from '../index';
+import { useDebouncedValueSelector } from '../index';
 
 export const useDataQuery = () => {
-  const values = useValueSelector((x) => x);
+  const values = useDebouncedValueSelector((x) => x, 500);
 
   return useQuery(
     ['characters', values?.page, values?.name, values?.status],

@@ -1,8 +1,9 @@
+import React from 'react';
+
 export type UseSearchParamsConfig<T> = {
   defaultValues?: T;
   sync?: boolean; // default true
   omitEmpty?: boolean; // default false
-  debouncedMilliseconds?: number; // default 0
 };
 
 export type UseSearchParamsResult<T> = {
@@ -13,7 +14,22 @@ export type UseSearchParamsResult<T> = {
 
 export type SearchParamsActionType = 'change';
 
-export type SearchQueryAction<T> = {
+export type SearchParamsAction<T> = {
   type: SearchParamsActionType;
   payload: Partial<T>;
+};
+
+export type CreateUseSearchParamsContextResult<TValues> = {
+  Provider: React.FC;
+  useValueSelector: <TSelected>(
+    selector?: (state: TValues) => TSelected
+  ) => TSelected;
+  useDebouncedValueSelector: <TSelected>(
+    selector?: (state: TValues) => TSelected,
+    debounceMilliseconds?: number
+  ) => TSelected;
+  useSetValues: () => (
+    input: ((values: TValues | null) => Partial<TValues>) | Partial<TValues>
+  ) => void;
+  useResetValues: () => void;
 };

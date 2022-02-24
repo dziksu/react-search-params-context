@@ -2,7 +2,7 @@ import 'react-app-polyfill/ie11';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { createUseSearchParamsContext } from '../src';
+import { createSearchParamsContext } from '../src';
 import { Filters } from './components/filters';
 import { Table } from './components/table';
 import { RerenderCounter } from './components/rerender-counter';
@@ -14,15 +14,28 @@ type SearchQueryParams = {
 };
 
 export const {
-  Provider: UseSearchParamsProvider,
+  Provider: SearchParamsProvider,
   useValueSelector,
+  useDebouncedValueSelector,
   useSetValues,
-} = createUseSearchParamsContext<SearchQueryParams>({
+} = createSearchParamsContext<SearchQueryParams>({
   sync: true,
   omitEmpty: true,
-  debouncedMilliseconds: 0,
   defaultValues: {
     page: 1,
+  },
+});
+
+export const {
+  Provider: ASearchParamsProvider,
+  useValueSelector: a,
+  useDebouncedValueSelector: b,
+  useSetValues: c,
+} = createSearchParamsContext<SearchQueryParams>({
+  sync: false,
+  omitEmpty: true,
+  defaultValues: {
+    page: 3,
   },
 });
 
@@ -38,11 +51,13 @@ const clientQuery = new QueryClient({
 const App: React.VFC = () => {
   return (
     <QueryClientProvider client={clientQuery}>
-      <UseSearchParamsProvider>
-        <RerenderCounter />
-        <Filters />
-        <Table />
-      </UseSearchParamsProvider>
+      <RerenderCounter />
+      <SearchParamsProvider>
+        <ASearchParamsProvider>
+          <Filters />
+          <Table />
+        </ASearchParamsProvider>
+      </SearchParamsProvider>
     </QueryClientProvider>
   );
 };

@@ -1,11 +1,13 @@
-import { SearchParamsActionType, SearchQueryAction } from '../types';
+import { SearchParamsAction, SearchParamsActionType } from '../types';
 import { objectDeepCopy } from '../helpers/object-deep-copy';
 
-export const useSearchParamsReducer = <T>(
+export const searchParamsReducer = <T>(
   state: T,
-  action: SearchQueryAction<T>
+  action: SearchParamsAction<T>
 ) => {
-  const actions: { [key in SearchParamsActionType]: () => T } = {
+  const actions: {
+    [key in SearchParamsActionType]: () => T;
+  } = {
     change: () =>
       objectDeepCopy({
         ...state,

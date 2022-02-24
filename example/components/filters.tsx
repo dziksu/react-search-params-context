@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useSetValues, useValueSelector } from '../index';
 import { RerenderCounter } from './rerender-counter';
 
-export const Filters: React.FC = () => {
+export const Filters: React.VFC = () => {
   const setValues = useSetValues();
   const values = useValueSelector((x) => x);
 

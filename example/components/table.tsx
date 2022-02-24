@@ -2,8 +2,8 @@ import * as React from 'react';
 import { RerenderCounter } from './rerender-counter';
 import { useDataQuery } from '../hooks/use-data-query';
 
-export const Table: React.FC = () => {
-  const dataQuery = useDataQuery();
+export const Table: React.VFC = () => {
+  const { data } = useDataQuery();
 
   return (
     <div>
@@ -11,11 +11,11 @@ export const Table: React.FC = () => {
       <RerenderCounter />
       <div>
         <ul>
-          {dataQuery?.data?.results?.map((x) => (
+          {data?.results?.map((x) => (
             <li key={x.id}>{x.name}</li>
           ))}
         </ul>
-        {!dataQuery?.data?.results && <p>No results</p>}
+        {!data?.results && <p>No results</p>}
       </div>
     </div>
   );

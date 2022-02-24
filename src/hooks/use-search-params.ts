@@ -1,25 +1,30 @@
 import { Reducer, useCallback, useEffect, useReducer, useRef } from 'react';
-import { debounce } from 'ts-debounce';
 import { setSearchParams } from '../helpers/set-search-params';
 import { getSearchParams } from '../helpers/get-search-params';
-import { useSearchParamsReducer } from '../reducers';
+import { searchParamsReducer } from '../reducers';
 import {
-  SearchQueryAction,
+  SearchParamsAction,
   UseSearchParamsConfig,
   UseSearchParamsResult,
 } from '../types';
 
+const currentSearchParamsUpdater: { id?: number } = {
+  id: undefined,
+};
+
 export const useSearchParams = <TValues extends {}>(
   config?: UseSearchParamsConfig<TValues>
 ): UseSearchParamsResult<TValues> => {
-  const [state, dispatch] = useReducer<
-    Reducer<TValues | null, SearchQueryAction<TValues>>
-  >(
-    useSearchParamsReducer,
+  const id = useRef(Math.ceil(Math.random() * 9999));
+  const initialStoreValue = useRef(
     !!config?.sync
       ? getSearchParams() || config?.defaultValues || null
       : config?.defaultValues || null
   );
+
+  const [state, dispatch] = useReducer<
+    Reducer<TValues, SearchParamsAction<TValues>>
+  >(searchParamsReducer, initialStoreValue.current || null);
 
   const setValues = useCallback(
     (
@@ -35,18 +40,31 @@ export const useSearchParams = <TValues extends {}>(
     dispatch({ type: 'change', payload: config?.defaultValues || {} });
   }, [state, dispatch, config?.defaultValues]);
 
-  const setValuesDebounced = useRef(
-    debounce(setValues, config?.debouncedMilliseconds || 0)
-  );
+  useEffect(() => {
+    if (!config?.sync) return;
+    if (!!currentSearchParamsUpdater.id) {
+      console.error('You are using at least 2 contexts with flag sync as true');
+    } else {
+      currentSearchParamsUpdater.id = id.current;
+    }
+    return () => {
+      if (!config?.sync) return;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof config?.sync !== 'undefined' && !config?.sync) return;
+    if (
+      !!currentSearchParamsUpdater.id &&
+      currentSearchParamsUpdater.id !== id.current
+    )
+      return;
     setSearchParams({ ...state }, config?.omitEmpty);
   }, [state]);
 
   return {
     values: state,
-    setValues: setValuesDebounced.current,
+    setValues,
     resetValues,
   };
 };

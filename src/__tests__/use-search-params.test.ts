@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { useSearchParams } from '../hooks/use-search-params';
+import { useSearchParams } from '..';
 
 describe('Basic usage of useSearchParams', () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Basic usage of useSearchParams', () => {
       },
     };
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result, waitFor } = renderHook(() =>
       useSearchParams({
         defaultValues,
       })
@@ -29,7 +29,7 @@ describe('Basic usage of useSearchParams', () => {
       result.current.setValues({ age: 10, name: 'Monica', isDeleted: true });
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => result.all.length === 2);
 
     const windowSearchParams = new URLSearchParams(window.location.search);
 
@@ -54,7 +54,7 @@ describe('Basic usage of useSearchParams', () => {
       result.current.setValues({ tags: ['d', 'e'] });
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => result.all.length === 3);
 
     const windowSearchParamsNext = new URLSearchParams(window.location.search);
     expect(windowSearchParamsNext.get('tags')).toBe(
@@ -69,7 +69,7 @@ describe('Basic usage of useSearchParams', () => {
       tags: ['a', 'b', 'c'],
     };
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result, waitFor } = renderHook(() =>
       useSearchParams({
         sync: false,
         defaultValues,
@@ -87,7 +87,7 @@ describe('Basic usage of useSearchParams', () => {
       result.current.setValues({ age: 10, name: 'Monica' });
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => result.all.length === 2);
 
     const windowSearchParams = new URLSearchParams(window.location.search);
 
@@ -107,8 +107,9 @@ describe('Basic usage of useSearchParams', () => {
       tags: ['a', 'b', 'c'],
     };
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result, waitFor } = renderHook(() =>
       useSearchParams({
+        sync: true,
         omitEmpty: true,
         defaultValues,
       })
@@ -125,7 +126,7 @@ describe('Basic usage of useSearchParams', () => {
       result.current.setValues({ age: 0, name: '' });
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => result.all.length === 2);
 
     const windowSearchParamsUpdated = new URLSearchParams(
       window.location.search
@@ -133,45 +134,5 @@ describe('Basic usage of useSearchParams', () => {
 
     expect(windowSearchParamsUpdated.get('name')).toBeNull();
     expect(windowSearchParamsUpdated.get('age')).toBe('0');
-  });
-
-  it('debouncedMilliseconds as 1 sec to debounce updates', async () => {
-    const defaultValues = {
-      name: 'John',
-      age: 23,
-      tags: ['a', 'b', 'c'],
-    };
-
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useSearchParams({
-        debouncedMilliseconds: 500,
-        defaultValues,
-      })
-    );
-
-    const windowSearchParams = new URLSearchParams(window.location.search);
-
-    expect(windowSearchParams.get('name')).toBe('John');
-    expect(windowSearchParams.get('age')).toBe('23');
-
-    act(() => {
-      result.current.setValues({ name: 'Anna' });
-      result.current.setValues({ name: 'Hanna' });
-      result.current.setValues({ name: 'Ewa' });
-    });
-
-    const windowSearchParamsUpdated = new URLSearchParams(
-      window.location.search
-    );
-    expect(windowSearchParamsUpdated.get('name')).toBe('John');
-
-    await waitForNextUpdate({ timeout: 500 });
-
-    jest.setTimeout(1000);
-
-    const windowSearchParamsUpdated2 = new URLSearchParams(
-      window.location.search
-    );
-    expect(windowSearchParamsUpdated2.get('name')).toBe('Ewa');
   });
 });

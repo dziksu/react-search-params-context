@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createContext, useContextSelector } from 'use-context-selector';
-import { UseSearchParamsConfig, UseSearchParamsResult } from '../types';
+import {
+  CreateUseSearchParamsContextResult,
+  UseSearchParamsConfig,
+  UseSearchParamsResult,
+} from '../types';
 import { useSearchParams } from '../hooks/use-search-params';
+import { debounce } from 'ts-debounce';
 
-export function createUseSearchParamsContext<TValues>(
+export function createSearchParamsContext<TValues>(
   config: UseSearchParamsConfig<TValues>
-) {
+): CreateUseSearchParamsContextResult<TValues> {
   const Context = createContext<UseSearchParamsResult<TValues>>({
     values: config.defaultValues || null,
     setValues: () => null,
@@ -20,6 +25,29 @@ export function createUseSearchParamsContext<TValues>(
     );
   };
 
+  const useDebouncedValueSelector = (
+    selector?: (state: TValues) => Partial<TValues>,
+    debounceMilliseconds?: number
+  ): any | null => {
+    const value = useContextSelector(Context, (s) =>
+      !selector ? s.values : selector(s.values as TValues)
+    );
+
+    const [debouncedValues, setDebouncedValues] = useState(value);
+
+    const debounced = useRef(
+      debounce((params) => {
+        return setDebouncedValues(params);
+      }, debounceMilliseconds || 500)
+    );
+
+    useEffect(() => {
+      debounced.current(value);
+    }, [value]);
+
+    return useMemo(() => debouncedValues, [debouncedValues]);
+  };
+
   const useSetValues = () => {
     return useContextSelector(Context, (s) => s.setValues);
   };
@@ -28,16 +56,7 @@ export function createUseSearchParamsContext<TValues>(
     return useContextSelector(Context, (s) => s.resetValues);
   };
 
-  const result: {
-    Provider: React.FC;
-    useValueSelector: <TSelected>(
-      selector?: (state: TValues) => TSelected
-    ) => TSelected;
-    useSetValues: () => (
-      input: ((values: TValues | null) => Partial<TValues>) | Partial<TValues>
-    ) => void;
-    useResetValues: () => void;
-  } = {
+  return {
     Provider: (props) => {
       const searchQueryHook = useSearchParams<TValues>(config);
       return (
@@ -47,9 +66,8 @@ export function createUseSearchParamsContext<TValues>(
       );
     },
     useValueSelector,
+    useDebouncedValueSelector,
     useSetValues,
     useResetValues,
   };
-
-  return result;
 }
