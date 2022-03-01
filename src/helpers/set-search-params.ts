@@ -2,6 +2,8 @@ export const setSearchParams = <T = {}>(
   searchQueryData: T,
   omitEmpty?: boolean
 ): void => {
+  if (typeof window === 'undefined') return;
+
   const searchQuery = new URLSearchParams();
 
   Object.entries(searchQueryData).forEach(([key, value]) => {

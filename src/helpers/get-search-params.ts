@@ -1,5 +1,5 @@
 export const getSearchParams = (): any | null => {
-  if (!window.location.search) return null;
+  if (typeof window === 'undefined' || !window.location.search) return null;
 
   const urlSearchQuery = new URLSearchParams(window.location.search);
 

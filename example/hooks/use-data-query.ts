@@ -1,18 +1,24 @@
-import { useQuery } from 'react-query';
-import { useDebouncedValueSelector } from '../index';
+import { useQuery, UseQueryResult } from 'react-query';
+import { useValueSelector } from '../index';
+import { Character, PaginatedData } from '../types';
 
-export const useDataQuery = () => {
-  const values = useDebouncedValueSelector((x) => x, 500);
+const API_URL = 'https://rickandmortyapi.com/api';
+
+export const useDataQuery = (): UseQueryResult<PaginatedData<Character>> => {
+  const values = useValueSelector((x) => x);
 
   return useQuery(
-    ['characters', values?.page, values?.name, values?.status],
+    ['characters', values?.page, values?.name, values?.status, values?.gender],
     async () => {
+      const urlSearchParams = new URLSearchParams({
+        page: (values.page || '').toString(),
+        name: (values.name || '').toString(),
+        status: (values.status || '').toString(),
+        gender: (values.gender || '').toString(),
+      }).toString();
+
       const [response] = await Promise.all([
-        fetch(
-          `https://rickandmortyapi.com/api/character?page=${
-            values.page || ''
-          }&name=${values.name || ''}&status=${values.status || ''}`
-        ).then((x) => x.json()),
+        fetch(`${API_URL}/character?${urlSearchParams}`).then((x) => x.json()),
       ]);
       return response;
     }
